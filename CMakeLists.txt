@@ -17,7 +17,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CM
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/lexer.l.h)
 
 ## Specify the library and its sources
-add_library(libfrugi SHARED
+add_library(libfrugi
 	src/FileWriter.cpp
 	src/ConsoleWriter.cpp
 	src/MessageFormatter.cpp
