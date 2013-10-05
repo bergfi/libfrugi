@@ -14,6 +14,7 @@
 #include <vector>
 #include <set>
 #include <unordered_map>
+#include <unistd.h>
 
 class MessageFormatter {
 public:
@@ -87,7 +88,7 @@ public:
 		bool m_enabled;
 		int m_verbosity;
 	public:
-		MessageClass(bool enabled, int verbosity):
+		MessageClass(bool enabled, int verbosity = 0):
 			m_enabled(enabled),
 			m_verbosity(verbosity) {
 		}
@@ -112,11 +113,13 @@ private:
 	class MSG {
 	public:
 		MSG(unsigned int id, Location loc, std::string message, MessageType type): id(id), loc(loc), message(message), type(type) {
+			pid = getpid();
 		}
 		unsigned int id;
 		Location loc;
 		std::string message;
 		MessageType type;
+		__pid_t pid;
 		bool operator<(const MSG& other) const {
 			if(loc.getFileName().length()>0 && loc.getFileName() == other.loc.getFileName()) {
 				if(loc.getFirstLine()   < other.loc.getFirstLine()  ) return true;
@@ -145,7 +148,7 @@ private:
 	bool m_autoFlush;
 	int verbosity;
 	
-	void print(const Location& l, const std::string& str, const MessageType& mType);
+	void print(const MSG& msg);
 public:
 
 	ConsoleWriter& getConsoleWriter() {

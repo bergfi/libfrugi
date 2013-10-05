@@ -22,7 +22,13 @@ const MessageFormatter::MessageType MessageFormatter::MessageType::Title  (Messa
 
 const int MessageFormatter::VERBOSITY_DEFAULT = 0;
 
-void MessageFormatter::print(const Location& loc, const std::string& str, const MessageType& mType) {
+void MessageFormatter::print(const MSG& msg) {
+
+	const Location& loc = msg.loc;
+	const std::string& str = msg.message;
+	const MessageType& mType = msg.type;
+
+	consoleWriter << msg.pid << "|";
 
 	if(mType.isError()) {
 		consoleWriter << ConsoleWriter::Color::Error;
@@ -242,7 +248,7 @@ void MessageFormatter::messageAt(Location loc, const std::string& str, const Mes
 	
 	if(m_autoFlush) {
 		flush();
-		print(loc,str,mType);
+		print(MSG(n++,loc,str,mType));
 	} else {
 		messages.insert(MessageFormatter::MSG(n++,loc,str,mType));
 	}
@@ -277,7 +283,7 @@ void MessageFormatter::reportErrors() {
 void MessageFormatter::flush() {
 	std::set<MSG>::iterator it = messages.begin();
 	for(;it!=messages.end(); ++it) {
-		print(it->loc,it->message,it->type);
+		print(*it);
 	}
 	messages.clear();
 }
