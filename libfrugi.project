@@ -158,4 +158,7 @@ $(ProjectPath)/include</SearchPaths>
       </Completion>
     </Configuration>
   </Settings>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Profile"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>
