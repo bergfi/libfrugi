@@ -532,6 +532,21 @@ void FileSystem::getTmpFileName(File& tmpFile) {
 	tmpFile = File(std::string(buffer));
 }
 
+File FileSystem::createTempDir(std::string const& baseName) {
+#if __unix__
+	char buffer[baseName.length() + 7];
+	sprintf(buffer, "%s", baseName.c_str());
+	snprintf(buffer + baseName.length(), 7, "XXXXXX");
+	if(mkdtemp(buffer)) {
+		return std::move(File(buffer));
+	} else {
+		return std::move(File());
+	}
+#else
+#   error
+#endif
+}
+
 // ----------------------------------------
 
 PushD::PushD() {

@@ -59,8 +59,9 @@ public:
 	static int findInPath(std::vector<File>& result, const File& file, const char* path);
 
 	static std::string* load(const File& file);
-	
+
 	static void getTmpFileName(File& tmpFile);
+	static File createTempDir(std::string const& baseName);
 };
 
 class PushD {
