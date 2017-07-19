@@ -330,7 +330,8 @@ void FileSystem::getFileBaseAndExtension(std::string& fileBase, std::string& fil
 
 int FileSystem::exists(const File& file) {
 	struct stat fileStat;
-	return !stat(file.getFileRealPath().c_str(),&fileStat);
+	int ret = stat(file.getFilePath().c_str(),&fileStat);
+	return !ret;
 }
 
 int FileSystem::move(const File& from, const File& to, bool interactive, bool safe) {

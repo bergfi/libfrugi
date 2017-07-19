@@ -140,7 +140,11 @@ public:
 	inline bool isEmpty() {
 		return fileBase.empty() && fileExtension.empty();
 	}
-	
+
+	bool exists() const {
+		return FileSystem::exists(*this);
+	}
+
 };
 
 std::ostream& operator<<(std::ostream& stream, const File& file);
