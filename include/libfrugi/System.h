@@ -13,25 +13,22 @@
 #define SYSTEM_TIMER_BACKEND_MONOTONIC_RAW 2
 #define SYSTEM_TIMER_BACKEND_WINDOWS       3
 
-#include <time.h>
+#include <cassert>
+#include <ctime>
 #include <string>
 #include <random>
-#ifdef WIN32
-#	include <windows.h>
-#	define SYSTEM_TIMER_BACKEND SYSTEM_TIMER_BACKEND_WINDOWS
-#else
-#	define SYSTEM_TIMER_BACKEND SYSTEM_TIMER_BACKEND_MONOTONIC_RAW
-#endif
+#include <vector>
+
+#include <libfrugi/FileSystem.h>
 
 class System {
 public:
 	class Timer {
 	private:
-	#if SYSTEM_TIMER_BACKEND == SYSTEM_TIMER_BACKEND_WINDOWS
+	#if WIN32
 		LARGE_INTEGER freq;
 		LARGE_INTEGER start;
-	#endif
-	#if SYSTEM_TIMER_BACKEND == SYSTEM_TIMER_BACKEND_MONOTONIC_RAW
+	#else
 		timespec start;
 	#endif
 	public:

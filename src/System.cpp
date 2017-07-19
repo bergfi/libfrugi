@@ -9,7 +9,18 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/time.h>
-#include "libfrugi/System.h"
+#include <libfrugi/System.h>
+
+#ifdef WIN32
+#	include <windows.h>
+#	define SYSTEM_TIMER_BACKEND SYSTEM_TIMER_BACKEND_WINDOWS
+#elif defined(HAS_POSIX_CLOCK_MONOTONIC_RAW)
+#	define SYSTEM_TIMER_BACKEND SYSTEM_TIMER_BACKEND_MONOTONIC_RAW
+#elif defined(HAS_POSIX_CLOCK_MONOTONIC)
+#	define SYSTEM_TIMER_BACKEND SYSTEM_TIMER_BACKEND_MONOTONIC
+#else
+#	error No timer backend!
+#endif
 
 System::Timer::Timer() {
 	reset();
