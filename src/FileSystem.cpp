@@ -230,9 +230,15 @@ char* path_basename(const char* path) {
 #endif
 
 std::string FileSystem::getRealPath(const std::string& filePath) {
-	char path[PATH_MAX];
-	realpath(filePath.c_str(),path);
-	return std::string(path);
+	char* path = realpath(filePath.c_str(), NULL);
+	if(path) {
+		std::string r(path);
+		free(path);
+		return std::move(r);
+	} else {
+		assert(0 && "need to fix realpath");
+		return "";
+	}
 }
 
 /*std::string FileSystem::getAbsolutePath(const std::string& filePath) {
