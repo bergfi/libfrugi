@@ -38,12 +38,26 @@ public:
 		double getElapsedSeconds();
 	};
 
+	static void init(int argc, char* argv[]);
+
 	static void sleep(uint64_t ms);
 	
 	static void generateUUID(size_t bytes,std::string& uuid);
 	
 	static uint64_t getCurrentTimeMillis();
 	static uint64_t getCurrentTimeMicros();
+
+	static std::string getBinaryLocation() {
+		if(!cwdAtStart.empty()) return cwdAtStart;
+		assert(0);
+	}
+
+	static std::string const& getArgument(size_t i);
+	static std::vector<std::string> const& getArguments();
+
+private:
+	static std::string cwdAtStart;
+	static std::vector<std::string> args;
 };
 
 #endif

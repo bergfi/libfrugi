@@ -22,6 +22,9 @@
 #	error No timer backend!
 #endif
 
+std::string System::cwdAtStart;
+std::vector<std::string> System::args;
+
 System::Timer::Timer() {
 	reset();
 }
@@ -52,6 +55,28 @@ double System::Timer::getElapsedSeconds() {
 	return (double)(now.tv_sec -start.tv_sec )
 		 + (double)(now.tv_nsec-start.tv_nsec)*0.000000001;
 #endif
+}
+
+void System::init(int argc, char* argv[]) {
+	if(!args.empty()) args.clear();
+	args.reserve(argc);
+	for(int i=0; i < argc; ++i) {
+		new (&args[i]) std::string(argv[i]);
+	}
+    if(System::getArgument(0)[0] == '/') {
+        cwdAtStart = FileSystem::getRealPath(System::getArgument(0));
+    } else {
+        cwdAtStart = FileSystem::getRealPath(std::string("./") + System::getArgument(0));
+    }
+    cwdAtStart = FileSystem::getDirName(cwdAtStart);
+}
+
+std::string const& System::getArgument(size_t i) {
+	return args[i];
+}
+
+std::vector<std::string> const& System::getArguments() {
+	return args;
 }
 
 void System::sleep(uint64_t ms) {
