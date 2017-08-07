@@ -115,7 +115,9 @@ public:
 	};
 	
 	static MessageFormatter* messageFormatter;
-	
+	static File bin_time;
+	static File bin_memtime;
+
 	/**
 	 * Gets the contents of the specified environment variable.
 	 * @param var The contents will be written to this string.

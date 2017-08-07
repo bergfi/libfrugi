@@ -9,6 +9,8 @@
 #include "libfrugi/Shell.h"
 
 MessageFormatter* Shell::messageFormatter = NULL;
+File Shell::bin_time;
+File Shell::bin_memtime;
 
 //const YAML::Node& operator>>(const YAML::Node& node, Shell::RunStatistics& stats) {
 //	if(const YAML::Node* itemNode = node.FindValue("time_monraw")) {
@@ -88,21 +90,32 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 	} else {
 		command += options.errFile;
 	}
-	
+
+	bool useBuiltinTime = false;
+	bool useBuiltinMemtime = false;
+
 	// If no statProgram is specified, use this default
 	string statProgram = options.statProgram;
 	if(options.statProgram.empty()) {
-		statProgram = "time -p";
+		if(bin_time.isEmpty()) FileSystem::findBinary("time", bin_time);
+		if(bin_memtime.isEmpty()) FileSystem::findBinary("memtime", bin_memtime);
+		if(!bin_memtime.isEmpty()) {
+			statProgram = bin_memtime.getFilePath();
+			useBuiltinMemtime = true;
+		} else if(!bin_time.isEmpty()) {
+			statProgram = bin_time.getFilePath() + " -p";
+			useBuiltinTime = true;
+		} else {
+			statProgram = "time";
+		}
 	}
 	
 	bool removeTmpFile = false;
 	bool useStatFile = false;
-	bool useBuiltinTime = (0==strncmp("time ",statProgram.c_str(),5)) || (0==strncmp("time",statProgram.c_str(),5));
-	bool useBuiltinMemtime = (0==strncmp("memtime ",statProgram.c_str(),5)) || (0==strncmp("memtime",statProgram.c_str(),5));
 
 	// If no statFile was specified, use a temporary
 	File statFile = File(options.statFile);
-	if(options.statFile.empty()) {
+	if(stats && options.statFile.empty()) {
 		char buffer[L_tmpnam];
 		tmpnam(buffer);
 		statFile = File(string(buffer));
@@ -116,7 +129,7 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 	}
 	if(useStatFile) {
 		if(useBuiltinTime) {
-			command = "(" + statProgram + " " + command + ") 2> " + statFile.getFileRealPath();
+			command = statProgram + " -o " + statFile.getFileRealPath() + " " + command;
 		} else {
 			command = statProgram + " " + command;
 			if(options.errFile.empty()) command += " 2> " + statFile.getFileRealPath();
