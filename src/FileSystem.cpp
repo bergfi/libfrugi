@@ -500,6 +500,21 @@ pathend:
 	return n;
 }
 
+bool FileSystem::findBinary(std::string const& name, File& binary) {
+	std::vector<File> results;
+	bool accessible = false;
+	FileSystem::findInPath(results, File(name));
+	for(File binFound: results) {
+		accessible = false;
+		if(FileSystem::hasAccessTo(binFound, X_OK)) {
+			accessible = true;
+			binary = binFound;
+			break;
+		}
+	}
+	return !accessible;
+}
+
 std::string* FileSystem::load(const File& file) {
 //	FILE* fp;
 //	long len;

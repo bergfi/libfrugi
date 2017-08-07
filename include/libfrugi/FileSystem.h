@@ -57,6 +57,7 @@ public:
 	static bool hasAccessTo(const File& file, int mode);
 	static int findInPath(std::vector<File>& result, const File& file);
 	static int findInPath(std::vector<File>& result, const File& file, const char* path);
+	static bool findBinary(std::string const& name, File& binary);
 
 	static std::string* load(const File& file);
 
