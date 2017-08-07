@@ -229,16 +229,26 @@ char* path_basename(const char* path) {
 } // extern "C"
 #endif
 
-std::string FileSystem::getRealPath(const std::string& filePath) {
-	char* path = realpath(filePath.c_str(), NULL);
-	if(path) {
-		std::string r(path);
-		free(path);
-		return std::move(r);
-	} else {
-		assert(0 && "need to fix realpath");
-		return "";
+std::string FileSystem::getRealPath(std::string const& filePath) {
+	char buffer[PATH_MAX+1];
+	strncpy(buffer, filePath.c_str(), PATH_MAX);
+	char* c = buffer + filePath.length();
+	char* fixc = NULL;
+	char* path = NULL;
+	for(;;) {
+		path = realpath(buffer, NULL);
+		if(path) break;
+		while(buffer <= c && *c != '/') c--;
+		if(c < buffer) return filePath;
+		*c = '\0';
+		if(fixc) *fixc = '/';
+		fixc = c;
 	}
+	if(fixc) *fixc = '/';
+	std::string r(path);
+	free(path);
+	r += std::string(c);
+	return std::move(r);
 }
 
 /*std::string FileSystem::getAbsolutePath(const std::string& filePath) {
