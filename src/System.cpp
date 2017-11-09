@@ -63,12 +63,12 @@ void System::init(int argc, char* argv[]) {
 	for(int i=0; i < argc; ++i) {
 		new (&args[i]) std::string(argv[i]);
 	}
-    if(System::getArgument(0)[0] == '/') {
-        cwdAtStart = FileSystem::getRealPath(System::getArgument(0));
-    } else {
-        cwdAtStart = FileSystem::getRealPath(std::string("./") + System::getArgument(0));
-    }
-    cwdAtStart = FileSystem::getDirName(cwdAtStart);
+	if(System::getArgument(0)[0] == '/') {
+		cwdAtStart = FileSystem::getRealPath(System::getArgument(0));
+	} else {
+		cwdAtStart = FileSystem::getRealPath(std::string("./") + System::getArgument(0));
+	}
+	cwdAtStart = FileSystem::getDirName(cwdAtStart);
 }
 
 std::string const& System::getArgument(size_t i) {

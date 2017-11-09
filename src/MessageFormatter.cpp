@@ -45,9 +45,6 @@ void MessageFormatter::print(const MSG& msg) {
 		consoleWriter << ConsoleWriter::Color::Message;
 	}
 
-//	consoleWriter << consoleWriter.applyprefix;
-//	consoleWriter << loc.filename;
-
 	loc.print(consoleWriter.ss());
 
 	if(mType.isError()) {
@@ -91,7 +88,6 @@ void MessageFormatter::print(const MSG& msg) {
 	consoleWriter << consoleWriter.applypostfix;
 
 }
-
 
 void MessageFormatter::reportErrorAt(Location loc, const std::string& str, const size_t& messageClassIndex) {
 	messageAt(loc,str,MessageType::Error,getMessageClass(messageClassIndex));
@@ -307,11 +303,3 @@ MessageFormatter::MessageClass& MessageFormatter::newMessageClass(size_t classIn
 	messageClassIndex.insert(std::pair<std::string,size_t>(classname,classIndex));
 	return messageClasses[classIndex];
 }
-
-//size_t MessageFormatter::newDefaultMessageClass(const int& verbosityLevel = VERBOSITY_DEFAULT) {
-//	std::stringstream name;
-//	name << "v" << verbosityLevel;
-//	
-//	
-//	newMessageClass(messageClasses.size(),"v"
-//}

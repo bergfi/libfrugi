@@ -131,14 +131,7 @@ ConsoleWriter::ConsoleWriter(std::ostream& out):
 ConsoleWriter& ConsoleWriter::operator<<(ConsoleWriter::Color color) {
 	if(ignoreColors) { return * this; }
 	#ifdef WIN32
-//		if(sss.size() == 1 && kindOfStream > 0) {
-//			HANDLE hConsole = GetStdHandle(kindOfStream==1?STD_OUTPUT_HANDLE:STD_ERROR_HANDLE);
-//			if(color.code[0]==0 || color.code[0]==FOREGROUND_INTENSITY) {
-//				SetConsoleTextAttribute(hConsole, colorStack.top().code[0]|color.code[0]);
-//			} else {
-//				SetConsoleTextAttribute(hConsole, color.code[0]);
-//			}
-//		}
+		#error to implement
 	#else
 		out << "\033[";
 		out << int(color.code[0]);

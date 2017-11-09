@@ -9,42 +9,8 @@
 #include "libfrugi/Shell.h"
 
 MessageFormatter* Shell::messageFormatter = NULL;
-File Shell::bin_time;
-File Shell::bin_memtime;
+std::unordered_map<std::string, Shell::StatsProgram*> Shell::StatsProgram::statsBinaries;
 
-//const YAML::Node& operator>>(const YAML::Node& node, Shell::RunStatistics& stats) {
-//	if(const YAML::Node* itemNode = node.FindValue("time_monraw")) {
-//		*itemNode >> stats.time_monraw;
-//	}
-//	if(const YAML::Node* itemNode = node.FindValue("time_user")) {
-//		*itemNode >> stats.time_user;
-//	}
-//	if(const YAML::Node* itemNode = node.FindValue("time_system")) {
-//		*itemNode >> stats.time_system;
-//	}
-//	if(const YAML::Node* itemNode = node.FindValue("time_elapsed")) {
-//		*itemNode >> stats.time_elapsed;
-//	}
-//	if(const YAML::Node* itemNode = node.FindValue("mem_virtual")) {
-//		*itemNode >> stats.mem_virtual;
-//	}
-//	if(const YAML::Node* itemNode = node.FindValue("mem_resident")) {
-//		*itemNode >> stats.mem_resident;
-//	}
-//	return node;
-//}
-//
-//YAML::Emitter& operator<<(YAML::Emitter& out, const Shell::RunStatistics& stats) {
-//	out << YAML::BeginMap;
-//	if(stats.time_monraw>0)  out << YAML::Key << "time_monraw"  << YAML::Value << stats.time_monraw;
-//	if(stats.time_user>0)    out << YAML::Key << "time_user"    << YAML::Value << stats.time_user;
-//	if(stats.time_system>0)  out << YAML::Key << "time_system"  << YAML::Value << stats.time_system;
-//	if(stats.time_elapsed>0) out << YAML::Key << "time_elapsed" << YAML::Value << stats.time_elapsed;
-//	if(stats.mem_virtual>0)  out << YAML::Key << "mem_virtual"  << YAML::Value << stats.mem_virtual;
-//	if(stats.mem_resident>0) out << YAML::Key << "mem_resident" << YAML::Value << stats.mem_resident;
-//	out << YAML::EndMap;
-//	return out;
-//}
 
 int Shell::system(std::string command, std::string cwd, std::string outFile, std::string errFile, int verbosity, RunStatistics* stats) {
 	SystemOptions sysOps;
@@ -60,9 +26,34 @@ int Shell::system(std::string command, int verbosity, RunStatistics* stats) {
 	return system(command,".","","",verbosity,stats);
 }
 
-int Shell::system(const SystemOptions& options, RunStatistics* stats) {
+void Shell::StatsProgram::findStatsBinaries() {
+
+	{
+		std::string s = "time";
+		auto it = statsBinaries.find(s);
+		if(it == statsBinaries.end()) {
+			File f;
+			if(FileSystem::findBinary(s, f)) {
+				statsBinaries[s] = new StatsProgram_Impl<StatsProgramTime>();
+			}
+		}
+	}
+	{
+		std::string s = "memtime";
+		auto it = statsBinaries.find(s);
+		if(it == statsBinaries.end()) {
+			File f;
+			if(FileSystem::findBinary(s, f)) {
+				statsBinaries[s] = new StatsProgram_Impl<StatsProgramMemTime>();
+			}
+		}
+	}
+}
+
+std::string Shell::buildCommand(const SystemOptions& options, RunStatistics* stats) {
+
 	std::string command = options.command;
-	
+
 	// Pipe stdout to /dev/null if no outFile is specified
 	command += " > ";
 	if(options.outFile.empty()) {
@@ -91,27 +82,19 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 		command += options.errFile;
 	}
 
-	bool useBuiltinTime = false;
-	bool useBuiltinMemtime = false;
+    return command;
+}
 
-	// If no statProgram is specified, use this default
-	string statProgram = options.statProgram;
-	if(options.statProgram.empty()) {
-		if(bin_time.isEmpty()) FileSystem::findBinary("time", bin_time);
-		if(bin_memtime.isEmpty()) FileSystem::findBinary("memtime", bin_memtime);
-		if(!bin_memtime.isEmpty()) {
-			statProgram = bin_memtime.getFilePath();
-			useBuiltinMemtime = true;
-		} else if(!bin_time.isEmpty()) {
-			statProgram = bin_time.getFilePath() + " -p";
-			useBuiltinTime = true;
-		} else {
-			statProgram = "time";
-		}
-	}
-	
+int Shell::system(const SystemOptions& options, RunStatistics* stats) {
+
+	StatsProgram* statsProgramHandler;
+	std::string command = Shell::buildCommand(options, stats);
+
 	bool removeTmpFile = false;
 	bool useStatFile = false;
+
+	// If no statProgram is specified, use this default
+	statsProgramHandler = StatsProgram::findStatsBinary(options.statProgram);
 
 	// If no statFile was specified, use a temporary
 	File statFile = File(options.statFile);
@@ -121,21 +104,16 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 		statFile = File(string(buffer));
 		removeTmpFile = true;
 	}
-	
+
 	// If statistics are requested, set up the command
 	if(stats) {
 		*stats = RunStatistics();
 		useStatFile = true;
 	}
 	if(useStatFile) {
-		if(useBuiltinTime) {
-			command = statProgram + " -o " + statFile.getFileRealPath() + " " + command;
-		} else {
-			command = statProgram + " " + command;
-			if(options.errFile.empty()) command += " 2> " + statFile.getFileRealPath();
-		}
+		command = statsProgramHandler->buildCommand(command, statFile);
 	}
-	
+
 	// Obtain the real path of the specified cwd and enter it
 	string realCWD = FileSystem::getRealPath(options.cwd);
 	PushD dir(realCWD);
@@ -145,14 +123,9 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 	int result = 0;
 	if(messageFormatter) messageFormatter->reportAction("Executing: " + command, MessageFormatter::MessageClass(options.verbosity));
 	
-	//timespec time1, time2;
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &time1);
 	System::Timer timer;
 	result = ::system( command.c_str() );
 	if(stats) stats->time_monraw = (float)timer.getElapsedSeconds();
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &time2);
-	//stats->time_monraw = (float)(time2.tv_sec -time1.tv_sec )
-	//                   + (float)(time2.tv_nsec-time1.tv_nsec)*0.000000001;
 	
 	if(messageFormatter) {
 		std::stringstream str;
@@ -162,21 +135,16 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 	}
 	
 	// Obtain statistics
-	if(stats && useStatFile) {
-		if(useBuiltinTime) {
-			readTimeStatistics(statFile,*stats);
-			if(messageFormatter) messageFormatter->reportAction("Read time statistics", MessageFormatter::MessageClass(options.verbosity));
-		} else if(useBuiltinMemtime) {
-			readMemtimeStatisticsFromLog(statFile,*stats);
-			if(messageFormatter) messageFormatter->reportAction("Read memtime statistics", MessageFormatter::MessageClass(options.verbosity));
-		}
+	if(stats) {
+		statsProgramHandler->buildCommand(command, statFile);
+		if(messageFormatter) messageFormatter->reportAction("Read time statistics (" + statsProgramHandler->getName() + ")", MessageFormatter::MessageClass(options.verbosity));
 	}
 	
 	// Leave the cwd
 	dir.popd();
 	if(messageFormatter) messageFormatter->reportAction("Exiting directory: `" + realCWD + "'", MessageFormatter::MessageClass(options.verbosity));
 	
-	if(useStatFile && removeTmpFile && FileSystem::exists(statFile)) {
+	if(stats && removeTmpFile && FileSystem::exists(statFile)) {
 		FileSystem::remove(statFile);
 	}
 	
@@ -253,19 +221,19 @@ bool Shell::readMemtimeStatistics(File file, RunStatistics& stats) {
 		return true;
 	}
 }
-	
+
 bool Shell::readMemtimeStatistics(const string& contents, RunStatistics& stats) {
 	return readMemtimeStatistics(contents.c_str(),stats);
 }
 
 bool Shell::readMemtimeStatistics(const char* contents, RunStatistics& stats) {
 	// Format example: 0.00 user, 0.00 system, 0.10 elapsed -- Max VSize = 4024KB, Max RSS = 76KB
-	int result = sscanf(contents,"%f user, %f system, %f elapsed -- Max VSize = %fKB, Max RSS = %fKB",
-		   &stats.time_user,
-		   &stats.time_system,
-		   &stats.time_elapsed,
-		   &stats.mem_virtual,
-		   &stats.mem_resident
-	);
+	int result = sscanf( contents,"%f user, %f system, %f elapsed -- Max VSize = %fKB, Max RSS = %fKB"
+	                   , &stats.time_user
+	                   , &stats.time_system
+	                   , &stats.time_elapsed
+	                   , &stats.mem_virtual
+	                   , &stats.mem_resident
+	                   );
 	return result != 5;
 }

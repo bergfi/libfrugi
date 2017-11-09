@@ -27,13 +27,6 @@ using namespace std;
 class FileWriter {
 protected:
 
-//	class WidthAdjuster {
-//	public:
-//		unsigned int width;
-//		unsigned int left;
-//		char fill;
-//	};
-
 	int indentation;
 	string prefixIndent;
 	string prefix;

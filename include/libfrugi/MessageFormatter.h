@@ -396,7 +396,6 @@ public:
 		consoleWriter.outdent();
 	}
 	
-//	size_t newDefaultMessageClass(const int& verbosityLevel = VERBOSITY_DEFAULT);
 };
 
 #endif

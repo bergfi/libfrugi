@@ -146,58 +146,7 @@ char *realpath(const char *path, char resolved_path[PATH_MAX]) {
 #endif
 
 #endif // WIN32
-/*
-int absolutepath(const char* origin, const char* path, char resolved_path[PATH_MAX]) {
-	if(!path) {
-		return -1;
-	}
-	if(!resolved_path) {
-		return -1;
-	}
-	if(path[0]=='\') {
-		int pathLength = strlen(path);
-		if(path>=PATH_MAX) return -1;
-		memcpy((void*)resolved_path,(const void*)path,sizeof(char)*(pathLength+1));
-		return pathLength;
-	}
-	
-	char* w_head = resolved_path;
-	
-	if(!origin || origin[0]!='/') {
-		getcwd(w_head,PATH_MAX);
-		int resolved_pathLength = strlen(w_head);
-		w_head+=resolved_pathLength;
-	}
-	if(origin) {
-//		int originLength = strlen(origin);
-//		if(w_head+originLength>=resolved_path+PATH_MAX) return 1;
-//		memcpy((void*)w_head,(const void*)origin,sizeof(char)*(originLength+1));
-//		w_head+=originLength;
-		w_head = absolutepath2(origin,w_head,resolved_path+PATH_MAX);
-	}
-	
-	w_head = absolutepath2(path,w_head,resolved_path+PATH_MAX);
-	
-	return 0;
-}
 
-char* absolutepath2(const char* r_head, char* w_head, const char* w_head_max) {
-	const char* begin = r_head;
-	const char* end = r_head;
-	char* w_head_1 = w_head;
-	for(;;) {
-		while(*end && *end!='/') ++end;
-		
-		// ..
-		if((end-begin==2) && strncmp("..",begin,2)) {
-			w_head = w_head_1;
-		}
-		
-		//
-		begin = end;
-	}
-}
-*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -251,12 +200,6 @@ std::string FileSystem::getRealPath(std::string const& filePath) {
 	return std::move(r);
 }
 
-/*std::string FileSystem::getAbsolutePath(const std::string& filePath) {
-	char path[PATH_MAX];
-	absolutepath(filePath.c_str(),path);
-	return std::string(path);
-}*/
-
 std::string FileSystem::getDirName(const std::string& filePath) {
 	char* fp = strdup(filePath.c_str());
 	if(!fp) return "";
@@ -292,6 +235,7 @@ std::string FileSystem::getFileExtension(const std::string& filePath) {
 	free(fp);
 	return p;
 }
+
 std::string FileSystem::getFileBase(const std::string& filePath) {
 	char* fp = strdup(filePath.c_str());
 	if(!fp) return "";
@@ -310,6 +254,7 @@ std::string FileSystem::getFileBase(const std::string& filePath) {
 	free(fp);
 	return p;
 }
+
 void FileSystem::getFileBaseAndExtension(std::string& fileBase, std::string& fileExtension, const std::string& filePath) {
 	char* fp = strdup(filePath.c_str());
 	if(!fp) return;
@@ -516,19 +461,6 @@ bool FileSystem::findBinary(std::string const& name, File& binary) {
 }
 
 std::string* FileSystem::load(const File& file) {
-//	FILE* fp;
-//	long len;
-//
-//	std::string* str = new std::string();
-//
-//	fp = fopen(file.getFileRealPath().c_str(),"rb");
-//	fseek(fp,0,SEEK_END);
-//	len = ftell(fp)+1;
-//	fseek(fp,0,SEEK_SET);
-//
-//	str->reserve(len+1);
-//	fread((char*)str->c_str(),len,1,fp); //read into buffer
-//	fclose(fp);
 	std::string* str = new std::string();
 	size_t filesize;
 	

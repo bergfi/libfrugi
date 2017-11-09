@@ -113,10 +113,68 @@ public:
 			mem_resident  = mem_resident > other.mem_resident ? mem_resident : other.mem_resident;
 		}
 	};
-	
+
+	class StatsProgramTime {
+	public:
+		static std::string buildCommand(std::string command, File statsFile) {
+			return "time -o " + statsFile.getFileRealPath() + " " + command;
+		}
+		static std::string readStats(File file, RunStatistics& stats) {
+			Shell::readTimeStatistics(file, stats);
+		}
+		static std::string getName() {
+			return "time";
+		}
+	};
+
+	class StatsProgramMemTime {
+	public:
+		static std::string buildCommand(std::string command, File statsFile) {
+			return "(memtime " + command + ") 2> " + statsFile.getFileRealPath();
+			//if(options.errFile.empty()) command += " 2> " + file.getFileRealPath();
+		}
+		static std::string readStats(File file, RunStatistics& stats) {
+			Shell::readMemtimeStatisticsFromLog(file, stats);
+		}
+		static std::string getName() {
+			return "memtime";
+		}
+	};
+
+	class StatsProgram {
+	public:
+		virtual std::string buildCommand(std::string command, File file) = 0;
+		virtual std::string readStats(File file, RunStatistics& stats) = 0;
+		virtual std::string getName() = 0;
+	public:
+		static std::unordered_map<std::string, StatsProgram*> statsBinaries;
+		static void findStatsBinaries();
+		static StatsProgram* findStatsBinary(std::string statsProgram) {
+			findStatsBinaries();
+			if(statsProgram.empty() && statsBinaries.size() > 0) {
+				return statsBinaries.begin()->second;
+			}
+			std::cout << statsBinaries;
+			assert(statsBinaries[statsProgram]);
+			return statsBinaries[statsProgram];
+		}
+	};
+
+	template<typename StatProgramHandler>
+	class StatsProgram_Impl: public StatsProgram {
+	public:
+		virtual std::string buildCommand(std::string command, File file) {
+			return StatProgramHandler::buildCommand(command, file);
+		}
+		virtual std::string readStats(File file, RunStatistics& stats) {
+			return StatProgramHandler::readStats(file, stats);
+		}
+		virtual std::string getName() {
+			return StatProgramHandler::getName();
+		}
+	};
+
 	static MessageFormatter* messageFormatter;
-	static File bin_time;
-	static File bin_memtime;
 
 	/**
 	 * Gets the contents of the specified environment variable.
@@ -130,7 +188,9 @@ public:
 		}
 		return !varResult;
 	}
-	
+
+    static std::string buildCommand(const SystemOptions& options, RunStatistics* stats = nullptr);
+
 	/**
 	 * Execute the specified command, in the specified working directory.
 	 * Pipe stdout to the file specified by outFile and stderr to the file
@@ -180,8 +240,5 @@ public:
 		}
 	}
 };
-
-//const YAML::Node& operator>>(const YAML::Node& node, Shell::RunStatistics& stats);
-//YAML::Emitter& operator<<(YAML::Emitter& out, const Shell::RunStatistics& stats);
 
 #endif // SHELL_H
