@@ -8,6 +8,7 @@
 
 #include "libfrugi/Shell.h"
 
+class statsBinaries;
 MessageFormatter* Shell::messageFormatter = NULL;
 std::unordered_map<std::string, Shell::StatsProgram*> Shell::StatsProgram::statsBinaries;
 
@@ -107,6 +108,7 @@ int Shell::system(const SystemOptions& options, RunStatistics* stats) {
 
 	// If statistics are requested, set up the command
 	if(stats) {
+		assert(statsProgramHandler);
 		*stats = RunStatistics();
 		useStatFile = true;
 	}

@@ -66,10 +66,11 @@ public:
 	/**
 	 * Creates a new FileWriter object with the specified settings.
 	 * @param indentation Start with this level of indentation. Default is 0.
-	 * @param prefix The prefix to prepend <indentlevel> times to every line. Default is "\t"
+	 * @param prefix The prefix to prepend to every line. Default is ""
 	 * @param postfix The postfix to append a single time to every line. Default is "\n"
+	 * @param prefixIndent The prefix to prepend <indentlevel> times to every line. Default is "\t"
 	 */
-	FileWriter(int indentation = 0, std::string prefix = "\t", std::string postfix = "\n"): indentation(indentation), prefix(prefix), postfix(postfix), applyprefix(""), applypostfix(postfix) {
+	FileWriter(int indentation = 0, std::string prefix = "", std::string postfix = "\n", std::string prefixIndent = "\t"): indentation(indentation), prefix(prefix), postfix(postfix), applyprefix(""), applypostfix(postfix) {
 		sss.push(new stringstream());
 		update();
 	}
@@ -319,13 +320,7 @@ public:
 	 */
 	void outdent() {
 		assert(indentation>0);
-		if(indentation>0) {
-			--indentation;
-			applyprefix = prefix;
-			for(int i=indentation;i--;) {
-				applyprefix = prefixIndent + applyprefix;
-			}
-		}
+		applyprefix = applyprefix.substr(prefixIndent.length());
 	}
 
 	/**

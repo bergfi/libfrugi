@@ -103,11 +103,12 @@ const ConsoleWriter::Color ConsoleWriter::Color::BgMagentaBright(1,45);
 const ConsoleWriter::Color ConsoleWriter::Color::BgWhiteBright  (1,47);
 #endif
 
-ConsoleWriter::ConsoleWriter(std::ostream& out):
-	FileWriter(),
-	out(out),
-	ignoreColors(false) {
-		
+ConsoleWriter::ConsoleWriter(std::ostream& out)
+	:	FileWriter()
+	,	out(out)
+	,	ignoreColors(false)
+	,	lastWasEndLine(false) {
+
 	if(&out==&std::cout) {
 		kindOfStream = 1;
 	} else if(&out==&std::cerr) {

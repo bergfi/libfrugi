@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="libfrugi" InternalType="">
+<CodeLite_Project Name="libfrugi" InternalType="" Version="10.0.0">
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00020001N0005Debug0000000000000001N0007Profile000000000000]]>
@@ -27,6 +27,7 @@
     <File Name="include/libfrugi/Shell.h"/>
     <File Name="include/libfrugi/System.h"/>
     <File Name="include/libfrugi/Settings.h"/>
+    <File Name="include/std_unordered_map.h"/>
   </VirtualDirectory>
   <Settings Type="Dynamic Library">
     <GlobalSettings>

@@ -25,6 +25,7 @@
 #include "FileSystem.h"
 #include "System.h"
 //#include "yaml-cpp/yaml.h"
+#include <std_unordered_map.h>
 
 class Shell {
 public:

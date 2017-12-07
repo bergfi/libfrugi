@@ -16,6 +16,8 @@ const MessageFormatter::MessageType MessageFormatter::MessageType::Action2(Messa
 const MessageFormatter::MessageType MessageFormatter::MessageType::Action3(MessageType::ACTION3);
 const MessageFormatter::MessageType MessageFormatter::MessageType::Warning(MessageType::WARNING);
 const MessageFormatter::MessageType MessageFormatter::MessageType::Success(MessageType::SUCCESS);
+const MessageFormatter::MessageType MessageFormatter::MessageType::Failure(MessageType::FAILURE);
+const MessageFormatter::MessageType MessageFormatter::MessageType::Note   (MessageType::NOTE);
 const MessageFormatter::MessageType MessageFormatter::MessageType::Error  (MessageType::ERR);
 const MessageFormatter::MessageType MessageFormatter::MessageType::File   (MessageType::FILE);
 const MessageFormatter::MessageType MessageFormatter::MessageType::Title  (MessageType::TITLE);
@@ -30,6 +32,10 @@ void MessageFormatter::print(const MSG& msg) {
 
 	consoleWriter << msg.pid << "|";
 
+	for(int i = msg.indent; i--;) {
+		consoleWriter << "  ";
+	}
+
 	if(mType.isError()) {
 		consoleWriter << ConsoleWriter::Color::Error;
 	} else if (mType.isWarning()) {
@@ -38,8 +44,14 @@ void MessageFormatter::print(const MSG& msg) {
 		consoleWriter << ConsoleWriter::Color::Notify;
 	} else if (mType.isAction() || mType.isTitle()) {
 		consoleWriter << ConsoleWriter::Color::Action;
-	} else if (mType.isSuccess()) {
-		consoleWriter << ConsoleWriter::Color::Proper;
+	} else if (mType.isReport()) {
+		if(mType == MessageType::Success) {
+			consoleWriter << ConsoleWriter::Color::Proper;
+		} else if(mType == MessageType::Failure) {
+			consoleWriter << ConsoleWriter::Color::Error;
+		} else {
+			consoleWriter << ConsoleWriter::Color::Notify2;
+		}
 	} else if (mType.isFile()) {
 	} else {
 		consoleWriter << ConsoleWriter::Color::Message;
@@ -69,8 +81,14 @@ void MessageFormatter::print(const MSG& msg) {
 			consoleWriter << ConsoleWriter::Color::Reset;
 		}
 	} else if (mType.isMessage()) {
-	} else if (mType.isSuccess()) {
-		consoleWriter << " o ";
+	} else if (mType.isReport()) {
+		if(mType == MessageType::Success) {
+			consoleWriter << " o ";
+		} else if(mType == MessageType::Failure) {
+			consoleWriter << " x ";
+		} else {
+			consoleWriter << " - ";
+		}
 		consoleWriter << ConsoleWriter::Color::Reset;
 	} else if (mType.isFile()) {
 	} else {
@@ -195,6 +213,22 @@ void MessageFormatter::reportSuccess(const std::string& str, const MessageFormat
 	message(str,MessageType::Success,messageClass);
 }
 
+void MessageFormatter::reportFailure(const std::string& str, const size_t& messageClassIndex) {
+	message(str,MessageType::Failure,getMessageClass(messageClassIndex));
+}
+
+void MessageFormatter::reportFailure(const std::string& str, const MessageFormatter::MessageClass& messageClass) {
+	message(str,MessageType::Failure,messageClass);
+}
+
+void MessageFormatter::reportNote(const std::string& str, const size_t& messageClassIndex) {
+	message(str,MessageType::Note,getMessageClass(messageClassIndex));
+}
+
+void MessageFormatter::reportNote(const std::string& str, const MessageFormatter::MessageClass& messageClass) {
+	message(str,MessageType::Note,messageClass);
+}
+
 void MessageFormatter::notify(const std::string& str, const size_t& messageClassIndex) {
 	message(str,MessageType::Notify,getMessageClass(messageClassIndex));
 }
@@ -244,9 +278,9 @@ void MessageFormatter::messageAt(Location loc, const std::string& str, const Mes
 	
 	if(m_autoFlush) {
 		flush();
-		print(MSG(n++,loc,str,mType));
+		print(MSG(n++,loc,_indent,str,mType));
 	} else {
-		messages.insert(MessageFormatter::MSG(n++,loc,str,mType));
+		messages.insert(MessageFormatter::MSG(n++,loc,_indent,str,mType));
 	}
 }
 

@@ -83,6 +83,7 @@ private:
 	int kindOfStream;
 	std::stack<Color> colorStack;
 	bool ignoreColors;
+	bool lastWasEndLine;
 public:
 
 	/**
@@ -112,6 +113,7 @@ public:
 	virtual ConsoleWriter& operator<<(ConsoleWriter::Color color);
 
 	virtual ConsoleWriter& appendLine(const string& s) {
+		preAddHook();
 		appendPrefix();
 		append(s);
 		appendPostfix();
@@ -134,52 +136,69 @@ public:
 	}
 
 	virtual ConsoleWriter& operator<<(const string& s) {
+		preAddHook();
 		ss() << s;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(int i) {
+		preAddHook();
 		ss() << i;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(unsigned int i) {
+		preAddHook();
 		ss() << i;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(long int i) {
+		preAddHook();
 		ss() << i;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(long unsigned int i) {
+		preAddHook();
 		ss() << i;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(float f) {
+		preAddHook();
 		ss() << f;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(double d) {
+		preAddHook();
 		ss() << d;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(long double ld) {
+		preAddHook();
 		ss() << ld;
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(const FileWriterOption& option) {
+		preAddHook();
 		FileWriter::operator<<(option);
 		return *this;
 	}
 
 	virtual ConsoleWriter& operator<<(const FileWriter& other) {
+		preAddHook();
 		ss() << other.toString();
+		return *this;
+	}
+
+	virtual ConsoleWriter& operator<<(std::ostream&(*f)(std::ostream&)) {
+		preAddHook();
+		ss() << f;
+		lastWasEndLine = true;
 		return *this;
 	}
 
@@ -196,6 +215,14 @@ public:
 	virtual void setIgnoreColors(bool ignoreColors) {
 		this->ignoreColors = ignoreColors;
 	}
+
+	virtual void preAddHook() {
+		if(lastWasEndLine) {
+			appendPrefix();
+			lastWasEndLine = false;
+		}
+	}
+
 };
 
 #endif //CONSOLEWRITER_H

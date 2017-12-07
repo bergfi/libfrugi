@@ -31,6 +31,8 @@ public:
 			WARNING,
 			ERR,
 			SUCCESS,
+			FAILURE,
+			NOTE,
 			FILE,
 			TITLE,
 
@@ -44,8 +46,8 @@ public:
 			WARNING_LAST  = WARNING,
 			ERROR_FIRST   = ERR,
 			ERROR_LAST    = ERR,
-			SUCCESS_FIRST = SUCCESS,
-			SUCCESS_LAST  = SUCCESS,
+			REPORT_FIRST  = SUCCESS,
+			REPORT_LAST   = NOTE,
 			FILE_FIRST    = FILE,
 			FILE_LAST     = FILE,
 			TITLE_FIRST   = TITLE,
@@ -66,6 +68,8 @@ public:
 		static const MessageType Warning;
 		static const MessageType Error;
 		static const MessageType Success;
+		static const MessageType Failure;
+		static const MessageType Note;
 		static const MessageType File;
 		static const MessageType Title;
 		bool isMessage() const { return MESSAGE_FIRST <= type && type <= MESSAGE_LAST; }
@@ -73,7 +77,7 @@ public:
 		bool isAction()  const { return ACTION_FIRST  <= type && type <= ACTION_LAST; }
 		bool isWarning() const { return WARNING_FIRST <= type && type <= WARNING_LAST; }
 		bool isError()   const { return ERROR_FIRST   <= type && type <= ERROR_LAST; }
-		bool isSuccess() const { return SUCCESS_FIRST <= type && type <= SUCCESS_LAST; }
+		bool isReport()  const { return REPORT_FIRST  <= type && type <= REPORT_LAST; }
 		bool isFile()    const { return FILE_FIRST    <= type && type <= FILE_LAST; }
 		bool isTitle()   const { return TITLE_FIRST   <= type && type <= TITLE_LAST; }
 		const MType& getType() const {return type;}
@@ -112,11 +116,12 @@ private:
 
 	class MSG {
 	public:
-		MSG(unsigned int id, Location loc, std::string message, MessageType type): id(id), loc(loc), message(message), type(type) {
+		MSG(unsigned int id, Location loc, int indent, std::string message, MessageType type): id(id), loc(loc), indent(indent), message(message), type(type) {
 			pid = getpid();
 		}
 		unsigned int id;
 		Location loc;
+		int indent;
 		std::string message;
 		MessageType type;
 		__pid_t pid;
@@ -147,6 +152,7 @@ private:
 	unsigned int warnings;
 	bool m_autoFlush;
 	int verbosity;
+	int _indent;
 	
 	void print(const MSG& msg);
 public:
@@ -155,7 +161,15 @@ public:
 		return consoleWriter;
 	}
 	
-	MessageFormatter(std::ostream& out): consoleWriter(out), m_useColoredMessages(false), errors(0), warnings(0), m_autoFlush(false), verbosity(VERBOSITY_DEFAULT) {
+	MessageFormatter(std::ostream& out)
+	:	consoleWriter(out)
+	,	m_useColoredMessages(false)
+	,	errors(0)
+	,	warnings(0)
+	,	m_autoFlush(false)
+	,	verbosity(VERBOSITY_DEFAULT)
+	,	_indent(false)
+	{
 		
 	}
 	
@@ -272,8 +286,24 @@ public:
 	 * The output format is:  o <success>
 	 * @param str The success string to report.
 	 */
-	virtual void reportSuccess(const std::string&  str, const size_t& messageClassIndex);
-	virtual void reportSuccess(const std::string&  str, const MessageClass& messageClass = MessageClass());
+	virtual void reportSuccess(const std::string& str, const size_t& messageClassIndex);
+	virtual void reportSuccess(const std::string& str, const MessageClass& messageClass = MessageClass());
+
+	/**
+	 * Report the specified success string, without a location.
+	 * The output format is:  x <failure>
+	 * @param str The failure string to report.
+	 */
+	virtual void reportFailure(const std::string& str, const size_t& messageClassIndex);
+	virtual void reportFailure(const std::string& str, const MessageClass& messageClass = MessageClass());
+
+	/**
+	 * Report the specified success string, without a location.
+	 * The output format is:  > <failure>
+	 * @param str The failure string to report.
+	 */
+	virtual void reportNote(const std::string& str, const size_t& messageClassIndex);
+	virtual void reportNote(const std::string& str, const MessageClass& messageClass = MessageClass());
 
 	/**
 	 * Report the specified notification string, without a location.
@@ -384,7 +414,7 @@ public:
 	 * prefixed with an additional prefix.
 	 */
 	void indent() {
-		consoleWriter.indent();
+		++_indent;
 	}
 
 	/**
@@ -393,9 +423,20 @@ public:
 	 * indentation is already 0.
 	 */
 	void outdent() {
-		consoleWriter.outdent();
+		--_indent;
 	}
-	
+
+	MessageFormatter& operator<<(std::ostream&(*f)(std::ostream&)) {
+		consoleWriter << f;
+		return *this;
+	}
+
+	template<typename MSG>
+	MessageFormatter& operator<<(MSG&& msg) {
+		consoleWriter << std::forward<MSG>(msg);
+		return *this;
+	}
+
 };
 
 #endif
