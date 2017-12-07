@@ -34,7 +34,7 @@ void Shell::StatsProgram::findStatsBinaries() {
 		auto it = statsBinaries.find(s);
 		if(it == statsBinaries.end()) {
 			File f;
-			if(FileSystem::findBinary(s, f)) {
+			if(!FileSystem::findBinary(s, f)) {
 				statsBinaries[s] = new StatsProgram_Impl<StatsProgramTime>();
 			}
 		}
@@ -44,7 +44,7 @@ void Shell::StatsProgram::findStatsBinaries() {
 		auto it = statsBinaries.find(s);
 		if(it == statsBinaries.end()) {
 			File f;
-			if(FileSystem::findBinary(s, f)) {
+			if(!FileSystem::findBinary(s, f)) {
 				statsBinaries[s] = new StatsProgram_Impl<StatsProgramMemTime>();
 			}
 		}
