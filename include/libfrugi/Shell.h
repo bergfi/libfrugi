@@ -120,8 +120,8 @@ public:
 		static std::string buildCommand(std::string command, File statsFile) {
 			return "time -o " + statsFile.getFileRealPath() + " " + command;
 		}
-		static std::string readStats(File file, RunStatistics& stats) {
-			Shell::readTimeStatistics(file, stats);
+		static bool readStats(File file, RunStatistics& stats) {
+			return Shell::readTimeStatistics(file, stats);
 		}
 		static std::string getName() {
 			return "time";
@@ -134,8 +134,8 @@ public:
 			return "(memtime " + command + ") 2> " + statsFile.getFileRealPath();
 			//if(options.errFile.empty()) command += " 2> " + file.getFileRealPath();
 		}
-		static std::string readStats(File file, RunStatistics& stats) {
-			Shell::readMemtimeStatisticsFromLog(file, stats);
+		static bool readStats(File file, RunStatistics& stats) {
+			return Shell::readMemtimeStatisticsFromLog(file, stats);
 		}
 		static std::string getName() {
 			return "memtime";
@@ -145,7 +145,7 @@ public:
 	class StatsProgram {
 	public:
 		virtual std::string buildCommand(std::string command, File file) = 0;
-		virtual std::string readStats(File file, RunStatistics& stats) = 0;
+		virtual bool readStats(File file, RunStatistics& stats) = 0;
 		virtual std::string getName() = 0;
 	public:
 		static std::unordered_map<std::string, StatsProgram*> statsBinaries;
@@ -178,7 +178,7 @@ public:
 		virtual std::string buildCommand(std::string command, File file) {
 			return StatProgramHandler::buildCommand(command, file);
 		}
-		virtual std::string readStats(File file, RunStatistics& stats) {
+		virtual bool readStats(File file, RunStatistics& stats) {
 			return StatProgramHandler::readStats(file, stats);
 		}
 		virtual std::string getName() {
