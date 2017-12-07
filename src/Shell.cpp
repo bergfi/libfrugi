@@ -28,27 +28,8 @@ int Shell::system(std::string command, int verbosity, RunStatistics* stats) {
 }
 
 void Shell::StatsProgram::findStatsBinaries() {
-
-	{
-		std::string s = "time";
-		auto it = statsBinaries.find(s);
-		if(it == statsBinaries.end()) {
-			File f;
-			if(!FileSystem::findBinary(s, f)) {
-				statsBinaries[s] = new StatsProgram_Impl<StatsProgramTime>();
-			}
-		}
-	}
-	{
-		std::string s = "memtime";
-		auto it = statsBinaries.find(s);
-		if(it == statsBinaries.end()) {
-			File f;
-			if(!FileSystem::findBinary(s, f)) {
-				statsBinaries[s] = new StatsProgram_Impl<StatsProgramMemTime>();
-			}
-		}
-	}
+	findStatsBinary<StatsProgramTime>("time");
+	findStatsBinary<StatsProgramMemTime>("memtime");
 }
 
 std::string Shell::buildCommand(const SystemOptions& options, RunStatistics* stats) {

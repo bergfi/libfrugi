@@ -159,6 +159,17 @@ public:
 			assert(statsBinaries[statsProgram]);
 			return statsBinaries[statsProgram];
 		}
+	private:
+		template<typename S>
+		static void findStatsBinary(std::string s) {
+			auto it = statsBinaries.find(s);
+			if(it == statsBinaries.end()) {
+				File f;
+				if(!FileSystem::findBinary(s, f)) {
+					statsBinaries[s] = new StatsProgram_Impl<S>();
+				}
+			}
+		}
 	};
 
 	template<typename StatProgramHandler>
