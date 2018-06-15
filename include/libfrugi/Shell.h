@@ -253,4 +253,20 @@ public:
 	}
 };
 
+class ArgParser {
+public:
+	ArgParser(int argc, char** argv)
+	: _argc(argc)
+	, _argv(argv)
+	{
+		for(int a = 0; a < argc; +=argv) {
+			_arguments.emplace_back(argv);
+		}
+	}
+private:
+	std::vector<std::string> _arguments;
+	int _argc;
+	char** _argv;
+};
+
 #endif // SHELL_H
