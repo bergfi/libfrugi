@@ -19,6 +19,7 @@
     <File Name="src/System.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
+    <File Name="include/TLS.h"/>
     <File Name="include/libfrugi/ConsoleWriter.h"/>
     <File Name="include/libfrugi/FileSystem.h"/>
     <File Name="include/libfrugi/FileWriter.h"/>
