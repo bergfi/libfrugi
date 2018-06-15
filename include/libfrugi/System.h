@@ -33,7 +33,7 @@ public:
 	#endif
 	public:
 		Timer();
-		Timer* create();
+		static Timer* create();
 		void reset();
 		double getElapsedSeconds();
 	};
