@@ -3,12 +3,19 @@
 
 #include <string>
 #include <unordered_map>
+#include <sstream>
 
 class SettingsValue: public std::string {
 public:
 	SettingsValue() {
 	}
 	SettingsValue(const std::string& str): std::string(str) {
+	}
+	template<typename T>
+	SettingsValue(const T& str): std::string(str) {
+		std::stringstream ss;
+		ss << str;
+		return SettingsValue(ss.str());
 	}
 	SettingsValue& operator=(const std::string& str) {
 		*this = SettingsValue(str);
