@@ -5,33 +5,55 @@
 #include <unordered_map>
 #include <sstream>
 
-class SettingsValue: public std::string {
+namespace libfrugi {
+
+class SettingsValue {
 public:
-	SettingsValue() {
-	}
-	SettingsValue(const std::string& str): std::string(str) {
+
+	SettingsValue(): _str() {
 	}
 	template<typename T>
-	SettingsValue(const T& str): std::string(str) {
+	SettingsValue(const T& str) {
 		std::stringstream ss;
 		ss << str;
-		return SettingsValue(ss.str());
+		_str = ss.str();
 	}
-	SettingsValue& operator=(const std::string& str) {
-		*this = SettingsValue(str);
+	SettingsValue(const std::string& str): _str(str) {
+	}
+
+	template<typename T>
+	SettingsValue& operator=(T&& str) {
+		std::stringstream ss;
+		ss << str;
+		_str = ss.str();
 		return *this;
 	}
 	
 	inline bool isOn() const {
-		return (*this)=="1" || (*this)=="true" || (*this)=="T" || (*this)=="on";
+		return _str=="1" || _str=="true" || _str=="T" || _str=="on";
 	}
 	inline bool isOff() const {
-		return (*this)=="0" || (*this)=="false" || (*this)=="F" || (*this)=="off";
+		return _str=="0" || _str=="false" || _str=="F" || _str=="off";
 	}
 	
 	operator bool() {
 		return isOn();
 	}
+	operator std::string() {
+		return _str;
+	}
+
+	std::string const& asString() {
+		return _str;
+	}
+
+	size_t asUnsignedValue() {
+		size_t r = 0;
+		std::stringstream(_str) >> r;
+		return r;
+	}
+private:
+    std::string _str;
 };
 
 class Settings: public std::unordered_map<std::string,SettingsValue> {
@@ -59,6 +81,20 @@ public:
 			return Switch::UNDEFINED;
 		}
 	}
+
+    static Settings& global() {
+        static Settings settings;
+        return settings;
+    }
+
+    void insertKeyValue(const char* s) {
+        const char* v = strchr(s, '=');
+        if(v) {
+            (*this)[std::string(s, v-s)] = std::string(v);
+        }
+    }
 };
+
+}
 
 #endif
