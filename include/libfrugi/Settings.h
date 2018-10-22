@@ -52,6 +52,13 @@ public:
 		std::stringstream(_str) >> r;
 		return r;
 	}
+
+    template<typename T>
+	T as() {
+		T r = 0;
+		std::stringstream(_str) >> r;
+		return r;
+	}
 private:
     std::string _str;
 };
@@ -91,6 +98,8 @@ public:
         const char* v = strchr(s, '=');
         if(v) {
             (*this)[std::string(s, v-s)] = std::string(v);
+        } else {
+            (*this)[std::string(s)] = "true";
         }
     }
 };
