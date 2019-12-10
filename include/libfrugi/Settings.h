@@ -1,6 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <cstring>
 #include <string>
 #include <unordered_map>
 #include <sstream>
@@ -97,7 +98,7 @@ public:
     void insertKeyValue(const char* s) {
         const char* v = strchr(s, '=');
         if(v) {
-            (*this)[std::string(s, v-s)] = std::string(v);
+            (*this)[std::string(s, v-s)] = std::string(v+1);
         } else {
             (*this)[std::string(s)] = "true";
         }

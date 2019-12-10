@@ -259,8 +259,8 @@ public:
 	: _argc(argc)
 	, _argv(argv)
 	{
-		for(int a = 0; a < argc; +=argv) {
-			_arguments.emplace_back(argv);
+		for(int a = 0; a < argc; ++a) {
+			_arguments.emplace_back(argv[a]);
 		}
 	}
 private:
