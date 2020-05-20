@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.2)
 project (libfrugi)
 set(libfrugi_VERSION_MAJOR 0)
-set(libfrugi_VERSION_MINOR 1)
+set(libfrugi_VERSION_MINOR 2)
 set(libfrugi_VERSION_PATCH 0)
 set(libfrugi_VERSION "${libfrugi_VERSION_MAJOR}.${libfrugi_VERSION_MINOR}.${libfrugi_VERSION_PATCH}")
 
@@ -74,6 +74,10 @@ install (DIRECTORY
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/libfrugi"
 	DESTINATION include/libfrugi
 )
+
+target_include_directories(libfrugi
+		INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+		)
 
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
