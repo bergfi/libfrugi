@@ -64,7 +64,7 @@ private:
     std::string _str;
 };
 
-class Settings: public std::unordered_map<std::string,SettingsValue> {
+class Settings {
 public:
 	enum class Switch {
 		UNDEFINED = 0,
@@ -73,10 +73,13 @@ public:
 		NEITHER = 3,
 		NUMBER_OF
 	};
+
+	static inline const SettingsValue NONE;
+
 public:
 	Switch asSwitch(const std::string& setting) {
-		auto it = find(setting);
-		if(it != end()) {
+		auto it = _map.find(setting);
+		if(it != _map.end()) {
 			const SettingsValue& value = it->second;
 			if(value.isOn()) {
 				return Switch::ON;
@@ -103,6 +106,33 @@ public:
             (*this)[std::string(s)] = "true";
         }
     }
+
+    Settings getSubSection(const std::string& section) {
+	    Settings s;
+	    for(auto& kv: _map) {
+	        if(!strcasecmp(kv.first.c_str(), section.c_str()) && kv.first.at(section.length()) == '.') {
+	            std::string k = kv.first.substr(section.length() + 1);
+	            s[k] = kv.second;
+	        }
+	    }
+	    return s;
+	}
+
+    SettingsValue& operator[](std::string const& key) {
+        return _map[key];
+    }
+
+    SettingsValue const& operator[](std::string const& key) const {
+        auto it = _map.find(key);
+        if(it != _map.end()) {
+            return it->second;
+        } else {
+            return NONE;
+        }
+    }
+private:
+    std::unordered_map<std::string, SettingsValue> _map;
+
 };
 
 }
