@@ -197,7 +197,7 @@ std::string FileSystem::getRealPath(std::string const& filePath) {
 	std::string r(path);
 	free(path);
 	r += std::string(c);
-	return std::move(r);
+	return r;
 }
 
 std::string FileSystem::getDirName(const std::string& filePath) {
@@ -357,7 +357,8 @@ int FileSystem::chdir(const File& dir) {
 
 int FileSystem::isDir(const File& file) {
 	struct stat fileStat;
-	stat(file.getFileRealPath().c_str(),&fileStat);
+	auto v = stat(file.getFileRealPath().c_str(),&fileStat);
+	if(v) return 0;
 	return S_ISDIR(fileStat.st_mode);
 }
 
