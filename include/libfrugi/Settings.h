@@ -110,7 +110,7 @@ public:
     Settings getSubSection(const std::string& section) {
 	    Settings s;
 	    for(auto& kv: _map) {
-	        if(!strcasecmp(kv.first.c_str(), section.c_str()) && kv.first.at(section.length()) == '.') {
+	        if(!strncasecmp(kv.first.c_str(), section.c_str(), section.length()) && kv.first.at(section.length()) == '.') {
 	            std::string k = kv.first.substr(section.length() + 1);
 	            s[k] = kv.second;
 	        }
