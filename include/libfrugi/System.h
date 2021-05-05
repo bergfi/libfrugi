@@ -78,8 +78,7 @@ public:
 	static uint64_t getCurrentTimeMicros();
 
 	static std::string getBinaryLocation() {
-		if(!cwdAtStart.empty()) return cwdAtStart;
-		assert(0);
+		return cwdAtStart;
 	}
 
 	static std::string const& getArgument(size_t i);
