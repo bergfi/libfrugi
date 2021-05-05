@@ -1,5 +1,4 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <cstring>
 #include <string>
@@ -135,6 +134,4 @@ private:
 
 };
 
-}
-
-#endif
+} // namespace libfrugi

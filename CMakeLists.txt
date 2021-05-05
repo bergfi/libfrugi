@@ -48,7 +48,7 @@ check_c_source_compiles(
     #include <time.h>
     int main() { return clock_gettime(CLOCK_MONOTONIC, NULL); }
     "
-    HAS_POSIX_CLOCK_MONOTONIC
+    HAVE_POSIX_CLOCK_MONOTONIC
 )
 check_c_source_compiles(
     "
@@ -56,15 +56,9 @@ check_c_source_compiles(
     #include <time.h>
     int main() { return clock_gettime(CLOCK_MONOTONIC_RAW, NULL); }
     "
-    HAS_POSIX_CLOCK_MONOTONIC_RAW
+	HAVE_POSIX_CLOCK_MONOTONIC_RAW
 )
 set(CMAKE_REQUIRED_LIBRARIES)
-if(HAS_POSIX_CLOCK_MONOTONIC)
-    add_definitions(-DHAS_POSIX_CLOCK_MONOTONIC)
-endif()
-if(HAS_POSIX_CLOCK_MONOTONIC_RAW)
-    add_definitions(-DHAS_POSIX_CLOCK_MONOTONIC_RAW)
-endif()
 
 check_include_file("unistd.h" HAVE_UNISTD_H)
 
@@ -86,12 +80,12 @@ set_property(TARGET libfrugi PROPERTY SOVERSION ${libfrugi_VERSION_MAJOR})
 set_property(TARGET libfrugi PROPERTY DEBUG_POSTFIX d)
 
 target_include_directories(libfrugi
-		INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
+		PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include> $<INSTALL_INTERFACE:include>
 		)
 
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/src/config.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/include/libfrugi/Config.h"
 )
 
 configure_package_config_file(libfrugiConfig.cmake.in
@@ -122,8 +116,12 @@ install(EXPORT libfrugiTargets
 		FILE libfrugiTargets.cmake
 		DESTINATION lib/cmake/libfrugi
 		)
-install (DIRECTORY
+install(DIRECTORY
 		"${CMAKE_CURRENT_SOURCE_DIR}/include/libfrugi"
+		DESTINATION include
+		)
+install(DIRECTORY
+		"${CMAKE_CURRENT_BINARY_DIR}/include/libfrugi"
 		DESTINATION include
 		)
 install(FILES
