@@ -19,13 +19,15 @@
 #include <fstream>
 #include "libfrugi/FileSystem.h"
 
+namespace libfrugi {
+
 #ifdef WIN32
 	int dir_make(const char* path, int mode) {
 		(void)mode;
 		return mkdir(path);
 	}
 #else
-	int dir_make(const char* path, __mode_t mode) {
+	int dir_make(const char* path, mode_t mode) {
 		return mkdir(path,mode);
 	}
 #endif
@@ -491,7 +493,7 @@ void FileSystem::getTmpFileName(File& tmpFile) {
 }
 
 File FileSystem::createTempDir(std::string const& baseName) {
-#if __unix__
+#if defined(__unix__) || defined(__APPLE__)
 	char buffer[baseName.length() + 7];
 	sprintf(buffer, "%s", baseName.c_str());
 	snprintf(buffer + baseName.length(), 7, "XXXXXX");
@@ -639,3 +641,5 @@ std::ostream& operator<<(std::ostream& stream, const File& file) {
 	stream << file.getFilePath();
 	return stream;
 }
+
+} // namespace libfrugi
